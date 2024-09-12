@@ -3,42 +3,73 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Xverse Wallet Integration</title>
+    <title>Xverse Wallet Integration Debug</title>
 </head>
 <body>
     <h1>Xverse Wallet Integration</h1>
     <button id="checkWallet">Check Xverse Wallet</button>
+    <button id="getAccounts">Get Accounts</button>
     <button id="sendTransaction">Send Transaction</button>
     <p id="status"></p>
 
     <script>
-        // 检查 Xverse 钱包是否安装
-        document.getElementById('checkWallet').addEventListener('click', async () => {
-            if (window.XverseProviders) {  // 使用 XverseProviders 而不是 XverseProvider
-                document.getElementById('status').textContent = 'XverseProviders is installed.';
-            } else {
-                document.getElementById('status').textContent = 'XverseProviders is not installed.';
-            }
-        });
+        // 等待DOM加载完毕再执行
+        document.addEventListener('DOMContentLoaded', () => {
+            // 检查 Xverse 钱包是否安装
+            document.getElementById('checkWallet').addEventListener('click', async () => {
+                if (window.XverseProviders) {
+                    document.getElementById('status').textContent = 'XverseProviders is installed.';
+                    console.log('XverseProviders object:', window.XverseProviders);  // 打印 XverseProviders 对象以查看其结构
+                } else {
+                    document.getElementById('status').textContent = 'XverseProviders is not installed.';
+                }
+            });
 
-document.getElementById('getAccounts').addEventListener('click', async () => {
-    try {
-        const response = await window.XverseProviders.Wallet.request({
-            method: 'stx_getAccounts',  // 获取 Stacks 账户
-        });
+            // 获取账户地址
+            document.getElementById('getAccounts').addEventListener('click', async () => {
+                try {
+                    const response = await window.XverseProviders.Wallet.request({
+                        method: 'stx_getAccounts',
+                    });
 
-        if (response.status === 'success') {
-            console.log('User accounts:', response.result);  // 输出用户地址
-            document.getElementById('status').textContent = 'User account: ' + response.result[0];  // 显示第一个账户
-        } else {
-            console.error('Error getting accounts:', response.error);
-            document.getElementById('status').textContent = 'Error: ' + response.error.message;
-        }
-    } catch (error) {
-        console.error('Error requesting accounts:', error);
-        document.getElementById('status').textContent = 'Error requesting accounts: ' + error.message;
-    }
-});
+                    if (response.status === 'success') {
+                        console.log('User accounts:', response.result);
+                        document.getElementById('status').textContent = 'User account: ' + response.result[0];
+                    } else {
+                        console.error('Error getting accounts:', response.error);
+                        document.getElementById('status').textContent = 'Error: ' + response.error.message;
+                    }
+                } catch (error) {
+                    console.error('Error requesting accounts:', error);
+                    document.getElementById('status').textContent = 'Error requesting accounts: ' + error.message;
+                }
+            });
+
+            // 发送交易
+            document.getElementById('sendTransaction').addEventListener('click', async () => {
+                try {
+                    const response = await window.XverseProviders.Wallet.request({
+                        method: 'stx_transferStx',
+                        params: {
+                            recipient: 'SP2VDFN6HACT6P551FN5ED79VK6JSEM5ACDMY308V',
+                            amount: '1000000',  // 发送 1 STX
+                            memo: 'Test Transfer',
+                        },
+                    });
+
+                    if (response.status === 'success') {
+                        console.log('Transaction sent:', response.result);
+                        document.getElementById('status').textContent = 'Transaction Hash: ' + response.result.txId;
+                    } else {
+                        console.error('Error sending transaction:', response.error);
+                        document.getElementById('status').textContent = 'Error: ' + response.error.message;
+                    }
+                } catch (error) {
+                    console.error('Error sending transaction:', error);
+                    document.getElementById('status').textContent = 'Error sending transaction: ' + error.message;
+                }
+            });
+        });
     </script>
 </body>
 </html>
