@@ -26,7 +26,7 @@
 
             // 获取账户地址
             document.getElementById('getAccounts').addEventListener('click', async () => {
-                if (window.XverseProviders && window.XverseProviders.Wallet) {  // 检查 Wallet 对象是否存在
+                if (window.XverseProviders && window.XverseProviders.Wallet) {  // 确保 Wallet 对象存在
                     try {
                         const response = await window.XverseProviders.Wallet.request({
                             method: 'stx_getAccounts',
@@ -50,7 +50,7 @@
 
             // 发送交易
             document.getElementById('sendTransaction').addEventListener('click', async () => {
-                if (window.XverseProviders && window.XverseProviders.Wallet) {  // 检查 Wallet 对象是否存在
+                if (window.XverseProviders && window.XverseProviders.Wallet) {  // 确保 Wallet 对象存在
                     try {
                         const response = await window.XverseProviders.Wallet.request({
                             method: 'stx_transferStx',
