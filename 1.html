@@ -3,16 +3,15 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>1111111111111</title>
+    <title>Xverse Wallet Integration</title>
 </head>
 <body>
-    <h1>111111111111111111</h1>
+    <h1>Xverse Wallet Integration</h1>
     <button id="checkWallet">Check Xverse Wallet</button>
     <button id="sendTransaction">Send Transaction</button>
     <p id="status"></p>
 
     <script>
-        // 检查 Xverse 钱包是否安装
         document.getElementById('checkWallet').addEventListener('click', async () => {
             if (window.XverseProvider) {
                 document.getElementById('status').textContent = 'XverseProvider is installed.';
@@ -21,24 +20,23 @@
             }
         });
 
-        // 发送交易的功能
         document.getElementById('sendTransaction').addEventListener('click', async () => {
             if (window.XverseProvider) {
                 try {
-                    // 获取用户地址
                     const accounts = await window.XverseProvider.request({ method: 'eth_requestAccounts' });
                     const fromAddress = accounts[0];
 
-                    // 发送交易
+                    const transactionParams = {
+                        from: fromAddress,
+                        to: 'SP2VDFN6HACT6P551FN5ED79VK6JSEM5ACDMY308V', // Replace with a valid recipient address
+                        value: '0x38d7ea4c68000', // Example: 0.01 ETH in Wei
+                        gas: '0x5208', // Gas limit (21000 in decimal)
+                        gasPrice: '0x3B9ACA00', // Gas price (1 Gwei)
+                    };
+
                     const transactionHash = await window.XverseProvider.request({
                         method: 'eth_sendTransaction',
-                        params: [{
-                            from: fromAddress,
-                            to: 'SP2VDFN6HACT6P551FN5ED79VK6JSEM5ACDMY308V', // 收款地址
-                            value: '0xAmountInWei', // 发送金额（单位是 Wei）
-                            gas: '0xGasLimit', // 例如 '0x5208'（21000 in decimal）
-                            gasPrice: '0xGasPrice', // 例如 '0x3B9ACA00'（1 Gwei）
-                        }],
+                        params: [transactionParams],
                     });
 
                     document.getElementById('status').textContent = 'Transaction Hash: ' + transactionHash;
