@@ -8,64 +8,56 @@
 <body>
     <h1>Xverse Wallet Integration</h1>
     <button id="checkWallet">Check Xverse Wallet</button>
-    <button id="sendTransaction">Send Stacks Transaction</button>
+    <button id="sendTransaction">Send Transaction</button>
     <p id="status"></p>
 
     <script>
         // 检查 Xverse 钱包是否安装
         document.getElementById('checkWallet').addEventListener('click', async () => {
-            if (window.XverseProviders && window.XverseProviders.Wallet) {  // 确保 XverseProviders 和 Wallet 被正确注入
-                document.getElementById('status').textContent = 'Xverse Wallet is installed.';
-                console.log('Xverse Wallet object:', window.XverseProviders.Wallet);
+            if (window.XverseProviders) {  // 使用 XverseProviders 而不是 XverseProvider
+                document.getElementById('status').textContent = 'XverseProviders is installed.';
             } else {
-                document.getElementById('status').textContent = 'Xverse Wallet is not installed.';
+                document.getElementById('status').textContent = 'XverseProviders is not installed.';
             }
         });
 
-        // 发送 Stacks 交易的功能
-        document.getElementById('sendTransaction').addEventListener('click', async () => {
-            if (window.XverseProviders && window.XverseProviders.Wallet) {  // 确保 XverseProviders 和 Wallet 被正确注入
-                try {
-                    // 使用 Wallet.request 请求用户 Stacks 账户
-                    const accounts = await window.XverseProviders.Wallet.request({ method: 'stx_getAccounts' });
-                    const fromAddress = accounts.result[0];  // 获取第一个账户
+document.getElementById('sendTransaction').addEventListener('click', async () => {
+    if (window.XverseProviders) {  // 确保 XverseProviders 已安装
+        try {
+            // 获取用户地址
+            const accounts = await window.XverseProviders.request({ method: 'eth_requestAccounts' });  // 直接使用 XverseProviders.request
+            const fromAddress = accounts[0];
 
-                    // 验证是否成功获取用户地址
-                    if (!fromAddress) {
-                        document.getElementById('status').textContent = 'Failed to retrieve user account.';
-                        return;
-                    }
-
-                    // 定义交易参数
-                    const transactionParams = {
-                        from: fromAddress,
-                        to: 'SP2VDFN6HACT6P551FN5ED79VK6JSEM5ACDMY308V',  // 修改为实际收款地址
-                        amount: '1000',  // 发送金额（单位为 uSTX，即 0.001 STX）
-                        fee: '100',  // 手续费（单位为 uSTX）
-                        memo: 'Test transaction',  // 交易备注
-                        nonce: 0  // 交易序列号
-                    };
-
-                    // 发送 Stacks 交易
-                    const transactionResponse = await window.XverseProviders.Wallet.request({
-                        method: 'stx_transferStx',
-                        params: transactionParams
-                    });
-
-                    // 检查交易结果
-                    if (transactionResponse.status === 'success') {
-                        document.getElementById('status').textContent = 'Transaction Hash: ' + transactionResponse.result.txid;
-                    } else {
-                        document.getElementById('status').textContent = 'Error sending transaction: ' + transactionResponse.error.message;
-                    }
-                } catch (error) {
-                    console.error('Error sending transaction:', error);
-                    document.getElementById('status').textContent = 'Error sending transaction: ' + error.message;
-                }
-            } else {
-                document.getElementById('status').textContent = 'Xverse Wallet is not installed.';
+            // 验证是否成功获取用户地址
+            if (!fromAddress) {
+                document.getElementById('status').textContent = 'Failed to retrieve user account.';
+                return;
             }
-        });
+
+            // 定义交易参数
+            const transactionParams = {
+                from: fromAddress,
+                to: 'SP2VDFN6HACT6P551FN5ED79VK6JSEM5ACDMY308V',  // 修改为你要的实际收款地址
+                value: '0x38d7ea4c68000',  // 0.01 ETH in Wei
+                gas: '0x5208',  // Gas limit (21000 in decimal)
+                gasPrice: '0x3B9ACA00',  // Gas price (1 Gwei)
+            };
+
+            // 发送交易
+            const transactionHash = await window.XverseProviders.request({
+                method: 'eth_sendTransaction',
+                params: [transactionParams],
+            });
+
+            document.getElementById('status').textContent = 'Transaction Hash: ' + transactionHash;
+        } catch (error) {
+            console.error('Error sending transaction:', error);
+            document.getElementById('status').textContent = 'Error sending transaction: ' + error.message;
+        }
+    } else {
+        document.getElementById('status').textContent = 'XverseProviders is not installed.';
+    }
+});
     </script>
 </body>
 </html>
