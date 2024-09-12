@@ -1,37 +1,65 @@
-document.getElementById('sendTransaction').addEventListener('click', async () => {
-    if (window.XverseProviders) {  // 确保 XverseProviders 已安装
-        try {
-            // 获取用户地址
-            const accounts = await window.XverseProviders.request({ method: 'eth_requestAccounts' });  // 直接使用 XverseProviders.request
-            const fromAddress = accounts[0];
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Xverse Wallet Integration</title>
+</head>
+<body>
+    <h1>Xverse Wallet Integration</h1>
+    <button id="checkWallet">Check Xverse Wallet</button>
+    <button id="sendTransaction">Send Transaction</button>
+    <p id="status"></p>
 
-            // 验证是否成功获取用户地址
-            if (!fromAddress) {
-                document.getElementById('status').textContent = 'Failed to retrieve user account.';
-                return;
+    <script>
+        // 检查 Xverse 钱包是否安装
+        document.getElementById('checkWallet').addEventListener('click', async () => {
+            if (window.XverseProviders) {  // 确保 XverseProviders 被正确注入
+                document.getElementById('status').textContent = 'XverseProviders is installed.';
+                console.log('XverseProviders object:', window.XverseProviders);
+            } else {
+                document.getElementById('status').textContent = 'XverseProviders is not installed.';
             }
+        });
 
-            // 定义交易参数
-            const transactionParams = {
-                from: fromAddress,
-                to: 'SP2VDFN6HACT6P551FN5ED79VK6JSEM5ACDMY308V',  // 修改为你要的实际收款地址
-                value: '0x38d7ea4c68000',  // 0.01 ETH in Wei
-                gas: '0x5208',  // Gas limit (21000 in decimal)
-                gasPrice: '0x3B9ACA00',  // Gas price (1 Gwei)
-            };
+        // 发送交易的功能
+        document.getElementById('sendTransaction').addEventListener('click', async () => {
+            if (window.XverseProviders) {  // 确保 XverseProviders 被正确注入
+                try {
+                    // 使用 XverseProviders 直接请求用户地址
+                    const accounts = await window.XverseProviders.request({ method: 'eth_requestAccounts' });
+                    const fromAddress = accounts[0];
 
-            // 发送交易
-            const transactionHash = await window.XverseProviders.request({
-                method: 'eth_sendTransaction',
-                params: [transactionParams],
-            });
+                    // 验证是否成功获取用户地址
+                    if (!fromAddress) {
+                        document.getElementById('status').textContent = 'Failed to retrieve user account.';
+                        return;
+                    }
 
-            document.getElementById('status').textContent = 'Transaction Hash: ' + transactionHash;
-        } catch (error) {
-            console.error('Error sending transaction:', error);
-            document.getElementById('status').textContent = 'Error sending transaction: ' + error.message;
-        }
-    } else {
-        document.getElementById('status').textContent = 'XverseProviders is not installed.';
-    }
-});
+                    // 定义交易参数
+                    const transactionParams = {
+                        from: fromAddress,
+                        to: 'SP2VDFN6HACT6P551FN5ED79VK6JSEM5ACDMY308V',  // 修改为实际收款地址
+                        value: '0x38d7ea4c68000',  // 发送金额，0.01 ETH in Wei
+                        gas: '0x5208',  // Gas limit (21000 in decimal)
+                        gasPrice: '0x3B9ACA00',  // Gas price (1 Gwei)
+                    };
+
+                    // 发送交易
+                    const transactionHash = await window.XverseProviders.request({
+                        method: 'eth_sendTransaction',
+                        params: [transactionParams],
+                    });
+
+                    document.getElementById('status').textContent = 'Transaction Hash: ' + transactionHash;
+                } catch (error) {
+                    console.error('Error sending transaction:', error);
+                    document.getElementById('status').textContent = 'Error sending transaction: ' + error.message;
+                }
+            } else {
+                document.getElementById('status').textContent = 'XverseProviders is not installed.';
+            }
+        });
+    </script>
+</body>
+</html>
