@@ -13,13 +13,12 @@
     <p id="status"></p>
 
     <script>
-        // 等待DOM加载完毕再执行
         document.addEventListener('DOMContentLoaded', () => {
             // 检查 Xverse 钱包是否安装
             document.getElementById('checkWallet').addEventListener('click', async () => {
                 if (window.XverseProviders) {
                     document.getElementById('status').textContent = 'XverseProviders is installed.';
-                    console.log('XverseProviders object:', window.XverseProviders);  // 打印 XverseProviders 对象以查看其结构
+                    console.log('XverseProviders object:', window.XverseProviders);
                 } else {
                     document.getElementById('status').textContent = 'XverseProviders is not installed.';
                 }
@@ -27,46 +26,54 @@
 
             // 获取账户地址
             document.getElementById('getAccounts').addEventListener('click', async () => {
-                try {
-                    const response = await window.XverseProviders.Wallet.request({
-                        method: 'stx_getAccounts',
-                    });
+                if (window.XverseProviders && window.XverseProviders.Wallet) {  // 检查 Wallet 对象是否存在
+                    try {
+                        const response = await window.XverseProviders.Wallet.request({
+                            method: 'stx_getAccounts',
+                        });
 
-                    if (response.status === 'success') {
-                        console.log('User accounts:', response.result);
-                        document.getElementById('status').textContent = 'User account: ' + response.result[0];
-                    } else {
-                        console.error('Error getting accounts:', response.error);
-                        document.getElementById('status').textContent = 'Error: ' + response.error.message;
+                        if (response.status === 'success') {
+                            console.log('User accounts:', response.result);
+                            document.getElementById('status').textContent = 'User account: ' + response.result[0];
+                        } else {
+                            console.error('Error getting accounts:', response.error);
+                            document.getElementById('status').textContent = 'Error: ' + response.error.message;
+                        }
+                    } catch (error) {
+                        console.error('Error requesting accounts:', error);
+                        document.getElementById('status').textContent = 'Error requesting accounts: ' + error.message;
                     }
-                } catch (error) {
-                    console.error('Error requesting accounts:', error);
-                    document.getElementById('status').textContent = 'Error requesting accounts: ' + error.message;
+                } else {
+                    document.getElementById('status').textContent = 'Xverse Wallet is not installed or Wallet object is missing.';
                 }
             });
 
             // 发送交易
             document.getElementById('sendTransaction').addEventListener('click', async () => {
-                try {
-                    const response = await window.XverseProviders.Wallet.request({
-                        method: 'stx_transferStx',
-                        params: {
-                            recipient: 'SP2VDFN6HACT6P551FN5ED79VK6JSEM5ACDMY308V',
-                            amount: '1000000',  // 发送 1 STX
-                            memo: 'Test Transfer',
-                        },
-                    });
+                if (window.XverseProviders && window.XverseProviders.Wallet) {  // 检查 Wallet 对象是否存在
+                    try {
+                        const response = await window.XverseProviders.Wallet.request({
+                            method: 'stx_transferStx',
+                            params: {
+                                recipient: 'SP2VDFN6HACT6P551FN5ED79VK6JSEM5ACDMY308V',
+                                amount: '1000000',
+                                memo: 'Test Transfer',
+                            },
+                        });
 
-                    if (response.status === 'success') {
-                        console.log('Transaction sent:', response.result);
-                        document.getElementById('status').textContent = 'Transaction Hash: ' + response.result.txId;
-                    } else {
-                        console.error('Error sending transaction:', response.error);
-                        document.getElementById('status').textContent = 'Error: ' + response.error.message;
+                        if (response.status === 'success') {
+                            console.log('Transaction sent:', response.result);
+                            document.getElementById('status').textContent = 'Transaction Hash: ' + response.result.txId;
+                        } else {
+                            console.error('Error sending transaction:', response.error);
+                            document.getElementById('status').textContent = 'Error: ' + response.error.message;
+                        }
+                    } catch (error) {
+                        console.error('Error sending transaction:', error);
+                        document.getElementById('status').textContent = 'Error sending transaction: ' + error.message;
                     }
-                } catch (error) {
-                    console.error('Error sending transaction:', error);
-                    document.getElementById('status').textContent = 'Error sending transaction: ' + error.message;
+                } else {
+                    document.getElementById('status').textContent = 'Xverse Wallet is not installed or Wallet object is missing.';
                 }
             });
         });
