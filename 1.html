@@ -12,29 +12,34 @@
     <p id="status"></p>
 
     <script>
+        // 检查 Xverse 钱包是否安装
         document.getElementById('checkWallet').addEventListener('click', async () => {
-            if (window.XverseProvider) {
-                document.getElementById('status').textContent = 'XverseProvider is installed.';
+            if (window.XverseProviders) {  // 使用 XverseProviders 而不是 XverseProvider
+                document.getElementById('status').textContent = 'XverseProviders is installed.';
             } else {
-                document.getElementById('status').textContent = 'XverseProvider is not installed.';
+                document.getElementById('status').textContent = 'XverseProviders is not installed.';
             }
         });
 
+        // 发送交易的功能
         document.getElementById('sendTransaction').addEventListener('click', async () => {
-            if (window.XverseProvider) {
+            if (window.XverseProviders) {  // 使用 XverseProviders 而不是 XverseProvider
                 try {
-                    const accounts = await window.XverseProvider.request({ method: 'eth_requestAccounts' });
+                    // 使用 wallet.request 获取用户地址
+                    const accounts = await window.XverseProviders.wallet.request({ method: 'eth_requestAccounts' });
                     const fromAddress = accounts[0];
 
+                    // 定义交易参数
                     const transactionParams = {
                         from: fromAddress,
-                        to: 'SP2VDFN6HACT6P551FN5ED79VK6JSEM5ACDMY308V', // Replace with a valid recipient address
-                        value: '0x38d7ea4c68000', // Example: 0.01 ETH in Wei
+                        to: 'SP2VDFN6HACT6P551FN5ED79VK6JSEM5ACDMY308V', // 收款地址
+                        value: '0x38d7ea4c68000', // 示例: 0.01 ETH in Wei
                         gas: '0x5208', // Gas limit (21000 in decimal)
                         gasPrice: '0x3B9ACA00', // Gas price (1 Gwei)
                     };
 
-                    const transactionHash = await window.XverseProvider.request({
+                    // 发送交易
+                    const transactionHash = await window.XverseProviders.wallet.request({
                         method: 'eth_sendTransaction',
                         params: [transactionParams],
                     });
@@ -45,7 +50,7 @@
                     document.getElementById('status').textContent = 'Error sending transaction: ' + error.message;
                 }
             } else {
-                document.getElementById('status').textContent = 'XverseProvider is not installed.';
+                document.getElementById('status').textContent = 'XverseProviders is not installed.';
             }
         });
     </script>
