@@ -3,80 +3,97 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Xverse Wallet Integration Debug</title>
+    <title>Xverse Wallet Integration</title>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // 检查 Xverse 钱包是否安装
+            document.getElementById('checkWallet').addEventListener('click', async () => {
+                if (window.XverseProviders && window.XverseProviders.Wallet) {
+                    document.getElementById('status').textContent = 'Xverse Wallet is installed.';
+                    console.log('Xverse Wallet object:', window.XverseProviders.Wallet);
+                } else {
+                    document.getElementById('status').textContent = 'Xverse Wallet is not installed.';
+                }
+            });
+
+            // 获取账户地址或请求权限
+            document.getElementById('getAccounts').addEventListener('click', async () => {
+                try {
+                    let response = await window.XverseProviders.Wallet.request({
+                        method: 'getAccounts',
+                        params: {
+                            purposes: ['ordinals', 'payment', 'stacks'],
+                            message: 'Please share your wallet addresses for transaction purposes.'
+                        }
+                    });
+
+                    if (response.status === 'success') {
+                        // 处理账户地址
+                        const paymentAddressItem = response.result.find(
+                            (address) => address.purpose === 'payment'
+                        );
+                        const ordinalsAddressItem = response.result.find(
+                            (address) => address.purpose === 'ordinals'
+                        );
+                        const stacksAddressItem = response.result.find(
+                            (address) => address.purpose === 'stacks'
+                        );
+
+                        document.getElementById('status').textContent = `Payment Address: ${paymentAddressItem?.address}, Ordinals Address: ${ordinalsAddressItem?.address}, Stacks Address: ${stacksAddressItem?.address}`;
+                    } else if (response.error.code === -32001) { // ACCESS_DENIED
+                        // 权限不足，请求权限
+                        response = await window.XverseProviders.Wallet.request({
+                            method: 'wallet_requestPermissions',
+                            params: {
+                                purposes: ['ordinals', 'payment', 'stacks']
+                            }
+                        });
+
+                        if (response.status === 'error') {
+                            document.getElementById('status').textContent = 'User declined the connection request.';
+                            return;
+                        }
+
+                        // 再次请求账户地址
+                        response = await window.XverseProviders.Wallet.request({
+                            method: 'getAccounts',
+                            params: {
+                                purposes: ['ordinals', 'payment', 'stacks'],
+                                message: 'Please share your wallet addresses for transaction purposes.'
+                            }
+                        });
+
+                        if (response.status === 'success') {
+                            // 处理账户地址
+                            const paymentAddressItem = response.result.find(
+                                (address) => address.purpose === 'payment'
+                            );
+                            const ordinalsAddressItem = response.result.find(
+                                (address) => address.purpose === 'ordinals'
+                            );
+                            const stacksAddressItem = response.result.find(
+                                (address) => address.purpose === 'stacks'
+                            );
+
+                            document.getElementById('status').textContent = `Payment Address: ${paymentAddressItem?.address}, Ordinals Address: ${ordinalsAddressItem?.address}, Stacks Address: ${stacksAddressItem?.address}`;
+                        } else {
+                            document.getElementById('status').textContent = 'Error requesting accounts: ' + response.error.message;
+                        }
+                    } else {
+                        document.getElementById('status').textContent = 'Error requesting accounts: ' + response.error.message;
+                    }
+                } catch (err) {
+                    console.error('Error requesting accounts:', err);
+                    document.getElementById('status').textContent = 'Error requesting accounts: ' + err.message;
+                }
+            });
+        });
+    </script>
 </head>
 <body>
     <h1>Xverse Wallet Integration</h1>
     <button id="checkWallet">Check Xverse Wallet</button>
     <button id="getAccounts">Get Accounts</button>
-    <button id="sendTransaction">Send Transaction</button>
     <p id="status"></p>
-
-    <script>
-        document.addEventListener('DOMContentLoaded', () => {
-            // 检查 Xverse 钱包是否安装
-            document.getElementById('checkWallet').addEventListener('click', async () => {
-                if (window.XverseProviders) {
-                    document.getElementById('status').textContent = 'XverseProviders is installed.';
-                    console.log('XverseProviders object:', window.XverseProviders);
-                } else {
-                    document.getElementById('status').textContent = 'XverseProviders is not installed.';
-                }
-            });
-
-            // 获取账户地址
-            document.getElementById('getAccounts').addEventListener('click', async () => {
-                if (window.XverseProviders && window.XverseProviders.Wallet) {  // 确保 Wallet 对象存在
-                    try {
-                        const response = await window.XverseProviders.Wallet.request({
-                            method: 'stx_getAccounts',
-                        });
-
-                        if (response.status === 'success') {
-                            console.log('User accounts:', response.result);
-                            document.getElementById('status').textContent = 'User account: ' + response.result[0];
-                        } else {
-                            console.error('Error getting accounts:', response.error);
-                            document.getElementById('status').textContent = 'Error: ' + response.error.message;
-                        }
-                    } catch (error) {
-                        console.error('Error requesting accounts:', error);
-                        document.getElementById('status').textContent = 'Error requesting accounts: ' + error.message;
-                    }
-                } else {
-                    document.getElementById('status').textContent = 'Xverse Wallet is not installed or Wallet object is missing.';
-                }
-            });
-
-            // 发送交易
-            document.getElementById('sendTransaction').addEventListener('click', async () => {
-                if (window.XverseProviders && window.XverseProviders.Wallet) {  // 确保 Wallet 对象存在
-                    try {
-                        const response = await window.XverseProviders.Wallet.request({
-                            method: 'stx_transferStx',
-                            params: {
-                                recipient: 'SP2VDFN6HACT6P551FN5ED79VK6JSEM5ACDMY308V',
-                                amount: '1000000',
-                                memo: 'Test Transfer',
-                            },
-                        });
-
-                        if (response.status === 'success') {
-                            console.log('Transaction sent:', response.result);
-                            document.getElementById('status').textContent = 'Transaction Hash: ' + response.result.txId;
-                        } else {
-                            console.error('Error sending transaction:', response.error);
-                            document.getElementById('status').textContent = 'Error: ' + response.error.message;
-                        }
-                    } catch (error) {
-                        console.error('Error sending transaction:', error);
-                        document.getElementById('status').textContent = 'Error sending transaction: ' + error.message;
-                    }
-                } else {
-                    document.getElementById('status').textContent = 'Xverse Wallet is not installed or Wallet object is missing.';
-                }
-            });
-        });
-    </script>
 </body>
 </html>
