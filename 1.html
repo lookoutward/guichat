@@ -5,17 +5,19 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Xverse Wallet Integration</title>
     <script>
+
         document.addEventListener('DOMContentLoaded', () => {
             // 检查 Xverse 钱包是否安装
             document.getElementById('checkWallet').addEventListener('click', async () => {
-                if (window.XverseProviders && window.XverseProviders.Wallet) {
-                    document.getElementById('status').textContent = 'Xverse Wallet is installed.';
-                    console.log('Xverse Wallet object:', window.XverseProviders.Wallet);
+                if (window.XverseProviders) {
+                    document.getElementById('status').textContent = 'XverseProviders is installed.';
+                    console.log('XverseProviders object:', window.XverseProviders);
                 } else {
-                    document.getElementById('status').textContent = 'Xverse Wallet is not installed.';
+                    document.getElementById('status').textContent = 'XverseProviders is not installed.';
                 }
             });
 
+            
             // 获取账户地址或请求权限
             document.getElementById('getAccounts').addEventListener('click', async () => {
                 try {
