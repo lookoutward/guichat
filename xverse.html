@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Xverse Wallet Integration Debug</title>
+</head>
+<body>
+    <h1>Xverse Wallet Integration</h1>
+    <button id="checkWallet">Check Xverse Wallet</button>
+    <button id="getAccounts">Get Accounts</button>
+    <button id="sendTransaction">Send Transaction</button>
+    <p id="status"></p>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // 检查 Xverse 钱包是否安装
+            document.getElementById('checkWallet').addEventListener('click', async () => {
+                if (window.XverseProviders) {
+                    document.getElementById('status').textContent = 'XverseProviders is installed.';
+                    console.log('XverseProviders object:', window.XverseProviders);
+                } else {
+                    document.getElementById('status').textContent = 'XverseProviders is not installed.';
+                }
+            });
+    </script>
+	
+	
+	
+    <script type="module">
+      import omit from 'https://cdn.skypack.dev/lodash.omit@4.5.0';
+      import { RpcErrorCode, request } from "https://cdn.jsdelivr.net/npm/@sats-connect/core/dist/index.mjs";
+      // import { RpcErrorCode, request } from "sats-connect";
+      
+      console.log(omit({ a: 1, b: 2 }, ['b']));
+      async function example() {
+        try {
+          const res1 = await request("getBalance", undefined);
+
+          if (res1.status === "success") {
+            // Happy path.
+            document.getElementById('status').textContent = `Balance: ${res1.result.total}`;
+            return res1.result.total;
+          }
+
+          if (res1.error.code !== RpcErrorCode.ACCESS_DENIED) {
+            // Something else went wrong.
+            throw new Error("Failed to get balance.", { cause: res1.error });
+          }
+
+          // Insufficient permissions. Request permissions and try again.
+          const res2 = await request("wallet_requestPermissions", undefined);
+
+          if (res2.status === "error") {
+            // User declined.
+            throw new Error("User declined connection.");
+          }
+
+          const res3 = await request("getBalance", undefined);
+
+          if (res3.status === "error") {
+            // Something went wrong.
+            throw new Error("Failed to get balance.", { cause: res3.error });
+          }
+
+          document.getElementById('status').textContent = `Balance: ${res3.result.total}`;
+          return res3.result.total;
+        } catch (error) {
+          console.error(error);
+          document.getElementById('status').textContent = 'Error occurred';
+        }
+      }
+
+    </script>
+
+	
+	
+	
+</body>
+</html>
